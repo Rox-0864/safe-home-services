@@ -1,0 +1,13 @@
+.venv
+.agents
+__pycache__
+*.pyc
+.pytest_cache
+.git
+.gitignore
+*.egg-info
+artifacts
+.env
+archivo.env
+hogar_confianza.db
+.PHONY

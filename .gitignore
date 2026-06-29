@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.local
+artifacts/*
+!artifacts/.gitkeep
+*.egg-info/
+dist/
+build/
+gcp-credentials.json
+archivo.env
+*.db
