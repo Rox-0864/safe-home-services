@@ -2,6 +2,8 @@
 
 **Track:** Concierge Agents | **Kaggle Capstone:** 5-Day AI Agents: Intensive Vibe Coding Course With Google
 
+[![CI](https://github.com/Rox-0864/safe-home-services/actions/workflows/ci.yml/badge.svg)](https://github.com/Rox-0864/safe-home-services/actions/workflows/ci.yml)
+
 Conecta hogares mexicanos con proveedores de servicio doméstico **CONFIABLES y VERIFICADOS** mediante un sistema multi-agente con pagos en garantía y protocolos de seguridad.
 
 ## 🚀 Quick Start
