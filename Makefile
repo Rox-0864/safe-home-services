@@ -1,4 +1,11 @@
-.PHONY: install run web streamlit test clean docker-build docker-build-cloud
+.PHONY: install run web streamlit test clean docker-build docker-push deploy
+
+PROJECT_ID = hogar-confianza
+REGION = us-central1
+REPO = hogar-confianza
+IMAGE = $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(REPO)/hogar-confianza
+TAG = latest
+SERVICE_NAME = hogar-confianza
 
 install:
 	pip install -e .
@@ -20,18 +27,25 @@ streamlit-run:
 	streamlit run app.py
 
 docker-build:
-	docker build -t hogar-confianza .
+	docker build -t $(IMAGE):$(TAG) .
 
-docker-run:
-	docker run -p 8080:8080 --env-file .env hogar-confianza
+docker-push:
+	docker push $(IMAGE):$(TAG)
 
-docker-build-cloud:
-	docker build -t gcr.io/$$(gcloud config get-value project)/hogar-confianza .
-	docker push gcr.io/$$(gcloud config get-value project)/hogar-confianza
-	gcloud run deploy hogar-confianza \
-		--image gcr.io/$$(gcloud config get-value project)/hogar-confianza \
+deploy:
+	gcloud run deploy $(SERVICE_NAME) \
+		--image $(IMAGE):$(TAG) \
+		--region $(REGION) \
 		--port 8080 \
-		--set-env-vars "DATABASE_URL=$$(gcloud secrets versions access latest --secret=hogar-confianza-db-url)"
+		--allow-unauthenticated
+
+deploy-with-env:
+	gcloud run deploy $(SERVICE_NAME) \
+		--image $(IMAGE):$(TAG) \
+		--region $(REGION) \
+		--port 8080 \
+		--allow-unauthenticated \
+		--set-env-vars "GOOGLE_API_KEY=$$(cat .env.api-key)"
 
 test:
 	pytest tests/ -v

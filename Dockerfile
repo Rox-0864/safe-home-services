@@ -2,22 +2,16 @@ FROM python:3.12-slim AS builder
 
 WORKDIR /app
 COPY pyproject.toml .
+COPY hogar_confianza/ hogar_confianza/
 RUN pip install --no-cache-dir setuptools wheel && \
-    pip install --no-cache-dir \
-        "google-adk>=2.0.0a0" \
-        "python-dotenv>=1.0.0" \
-        "pydantic>=2.0.0" \
-        "sqlmodel>=0.0.22" \
-        "streamlit>=1.40.0"
+    pip install --no-cache-dir .
 
 FROM python:3.12-slim AS runtime
 
 WORKDIR /app
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
+COPY --from=builder /usr/local /usr/local
 
-COPY hogar_confianza/ hogar_confianza/
-COPY app.py run.py healthcheck.py .env.example ./
+COPY app.py run.py healthcheck.py ./
 
 EXPOSE 8080
 
