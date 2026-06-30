@@ -106,7 +106,8 @@ async def serve_mcp():
         elif name == "search_places":
             query = arguments.get("query", "")
             results = _client.places_autocomplete(query)
-            return [TextContent(type="text", text=json.dumps({"success": True, "results": results}, ensure_ascii=False, indent=2))]
+            payload = {"success": True, "results": results}
+            return [TextContent(type="text", text=json.dumps(payload, ensure_ascii=False, indent=2))]
 
         return [TextContent(type="text", text="Tool not found")]
 

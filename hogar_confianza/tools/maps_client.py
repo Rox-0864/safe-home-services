@@ -31,12 +31,12 @@ DISTANCE_MATRIX_URL = "https://maps.googleapis.com/maps/api/distancematrix/json"
 
 
 def _haversine(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
-    EARTH_RADIUS_KM = 6371.0
+    earth_radius_km = 6371.0
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
     dphi = math.radians(lat2 - lat1)
     dlambda = math.radians(lng2 - lng1)
     a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
-    return EARTH_RADIUS_KM * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return earth_radius_km * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
 def _mock_geocode(address: str) -> dict:
@@ -252,7 +252,10 @@ class GoogleMapsClient:
         except requests.Timeout:
             return {"success": False, "error": "La solicitud de distancia excedió el tiempo de espera"}
         except Exception:
-            return {"success": True, "distance_km": distance_km, "duration_minutes": None, "mode": "driving", "mock": True}
+            return {
+                "success": True, "distance_km": distance_km,
+                "duration_minutes": None, "mode": "driving", "mock": True,
+            }
 
     def places_autocomplete(self, query: str, restrict_to_mx: bool = True) -> list[dict]:
         if self._mock_mode:

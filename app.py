@@ -38,11 +38,14 @@ def init_app():
 
 def run_agent(message: str, runner, session_service) -> str:
     async def _run():
-        await session_service.create_session(
-            app_name="hogar-confianza",
-            user_id=USER_ID,
-            session_id=SESSION_ID,
-        )
+        try:
+            await session_service.create_session(
+                app_name="hogar-confianza",
+                user_id=USER_ID,
+                session_id=SESSION_ID,
+            )
+        except Exception:
+            pass
         user_msg = Content(parts=[Part(text=message)], role="user")
         responses = []
         async for event in runner.run_async(

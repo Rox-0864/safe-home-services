@@ -15,12 +15,12 @@ def _normalize(s: str) -> str:
 
 
 def _haversine(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
-    EARTH_RADIUS_KM = 6371.0
+    earth_radius_km = 6371.0
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
     dphi = math.radians(lat2 - lat1)
     dlambda = math.radians(lng2 - lng1)
     a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
-    return round(EARTH_RADIUS_KM * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a)), 1)
+    return round(earth_radius_km * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a)), 1)
 
 
 def _provider_to_dict(p: ProviderDB) -> dict:
@@ -236,7 +236,7 @@ def create_escrow_booking(
     response = {
         "booking_id": booking_id,
         "status": "PENDIENTE_APROBACION",
-        "message": f"Reserva {booking_id} creada. El usuario debe aprobar el depósito en garantía de ${amount:,.2f} MXN antes de confirmar.",
+        "message": f"Reserva {booking_id} creada. Debe aprobar el depósito de ${amount:,.2f} MXN.",
         "amount_held": amount,
         "release_conditions": [
             "El pago se libera al proveedor 48h después de completar el servicio",
@@ -265,7 +265,7 @@ def approve_booking(booking_id: str) -> str:
         return json.dumps({
             "booking_id": booking_id,
             "status": "CONFIRMADA",
-            "message": f"Reserva {booking_id} confirmada. El pago de ${booking.amount:,.2f} MXN está retenido en garantía.",
+            "message": f"Reserva {booking_id} confirmada. ${booking.amount:,.2f} MXN retenido en garantía.",
         }, ensure_ascii=False, indent=2)
 
 
@@ -309,5 +309,5 @@ def release_payment(booking_id: str, provider_confirmed: bool, user_confirmed: b
         return json.dumps({
             "booking_id": booking_id,
             "status": "COMPLETADA",
-            "message": f"Pago de ${booking.amount:,.2f} MXN liberado al proveedor. Los 48h de ventana de reclamos han iniciado.",
+            "message": f"Pago de ${booking.amount:,.2f} MXN liberado. Ventana de 48h para reclamos iniciada.",
         }, ensure_ascii=False, indent=2)

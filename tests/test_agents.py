@@ -65,6 +65,9 @@ def test_create_escrow():
     import json
 
     from hogar_confianza.tools.provider_tools import create_escrow_booking
-    result = json.loads(create_escrow_booking("PROV-001", "plomeria", "Fuga de agua", 1500, "2026-06-25", "10:00", "Test", "+525511111111"))
+    result = json.loads(
+        create_escrow_booking("PROV-001", "plomeria", "Fuga de agua", 1500,
+                              "2026-06-25", "10:00", "Test", "+525511111111")
+    )
     assert result["status"] == "PENDIENTE_APROBACION"
     assert any(word in json.dumps(result).lower() for word in ["garantía", "retenido", "escrow"])

@@ -7,5 +7,8 @@ triage_agent = Agent(
     name="triage_agent",
     model=resolve_model_with_fallback(),
     instruction=lambda _ctx: get_prompt("triage"),
-    description="Clasifica solicitudes de servicio doméstico. Transfiere a matching_agent cuando identifica el tipo de servicio.",
+    description=(
+        "Clasifica solicitudes de servicio doméstico. "
+        "Transfiere a matching_agent cuando identifica el tipo de servicio."
+    ),
 )

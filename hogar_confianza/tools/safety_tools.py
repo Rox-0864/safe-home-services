@@ -157,7 +157,11 @@ def report_incident(booking_id: str, incident_type: str, description: str) -> st
             "Incidente reportado al equipo de seguridad",
             "Reembolso del depósito procesado" if severity == "ALTA" else "En revisión",
         ],
-        "recommendation": "Contacta a las autoridades locales al 911. Te asistiremos con la denuncia." if severity == "ALTA" else "Procederemos con la investigación interna."
+        "recommendation": (
+            "Contacta a las autoridades locales al 911. Te asistiremos con la denuncia."
+            if severity == "ALTA" else
+            "Procederemos con la investigación interna."
+        )
     }, ensure_ascii=False, indent=2)
 
 

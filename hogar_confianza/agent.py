@@ -6,10 +6,16 @@ from hogar_confianza.agents.booking import booking_agent
 from hogar_confianza.agents.matching import matching_agent
 from hogar_confianza.agents.safety import safety_agent
 from hogar_confianza.agents.triage import triage_agent
+from hogar_confianza.database.engine import get_engine, init_db
+from hogar_confianza.database.seed import seed_providers
 from hogar_confianza.i18n import get_prompt, get_ui
 from hogar_confianza.security.pii_redactor import SecurityScreen
 
 load_dotenv()
+
+_engine = get_engine()
+init_db(_engine)
+seed_providers(_engine)
 
 SECURITY_SCREEN = SecurityScreen()
 
