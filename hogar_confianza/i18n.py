@@ -22,9 +22,9 @@ def get_prompt(key: str) -> str:
 
 
 UI = {
-    "page_title": {"es": "HogarConfianza", "en": "HogarConfianza"},
-    "app_title": {"es": "Asistente HogarConfianza", "en": "HogarConfianza Assistant"},
-    "sidebar_title": {"es": "HogarConfianza", "en": "HogarConfianza"},
+    "page_title": {"es": "HogarConfianza", "en": "Safe Home Services"},
+    "app_title": {"es": "Asistente HogarConfianza", "en": "Safe Home Services Assistant"},
+    "sidebar_title": {"es": "HogarConfianza", "en": "Safe Home Services"},
     "register_title": {"es": "Registro", "en": "Sign Up"},
     "name_label": {"es": "Tu nombre", "en": "Your name"},
     "phone_label": {"es": "Tu teléfono", "en": "Your phone"},
