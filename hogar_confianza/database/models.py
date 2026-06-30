@@ -1,4 +1,6 @@
-from sqlmodel import JSON, Column, Field, SQLModel
+from datetime import datetime
+
+from sqlmodel import JSON, Field, SQLModel
 
 
 class ProviderDB(SQLModel, table=True):
@@ -15,6 +17,10 @@ class ProviderDB(SQLModel, table=True):
     has_insurance: bool
     completed_jobs: int
     trust_score: float
+    lat: float | None = None
+    lng: float | None = None
+    service_area_km: float = 10.0
+    address_formatted: str | None = None
 
 
 class BookingDB(SQLModel, table=True):
@@ -30,6 +36,7 @@ class BookingDB(SQLModel, table=True):
     scheduled_time: str
     amount: float
     escrow_held: bool
+    address_id: str | None = Field(default=None, foreign_key="user_addresses.id")
 
 
 class SafetyCheckInDB(SQLModel, table=True):
@@ -42,3 +49,24 @@ class SafetyCheckInDB(SQLModel, table=True):
     selfie_confirmed: bool
     location_verified: bool
     trusted_contact_notified: bool
+
+
+class UserAddressDB(SQLModel, table=True):
+    __tablename__ = "user_addresses"
+
+    id: str = Field(primary_key=True)
+    user_id: str
+    calle: str
+    numero_exterior: str | None = None
+    numero_interior: str | None = None
+    colonia: str
+    ciudad: str
+    estado: str
+    zip_code: str
+    pais: str = "México"
+    lat: float | None = None
+    lng: float | None = None
+    formatted_address: str | None = None
+    place_id: str | None = None
+    is_verified: bool = False
+    created_at: str = Field(default_factory=lambda: datetime.now().isoformat())

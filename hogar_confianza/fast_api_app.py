@@ -1,4 +1,3 @@
-import os
 import base64
 import json
 import logging
@@ -12,7 +11,6 @@ from google.genai.types import Content, Part
 from hogar_confianza.agent import root_agent
 from hogar_confianza.database.engine import get_engine, init_db, set_db_engine
 from hogar_confianza.database.seed import seed_providers
-
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)

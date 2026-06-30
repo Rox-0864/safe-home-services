@@ -1,18 +1,19 @@
 import json
 
-from hogar_confianza.tools.provider_tools import (
-    search_providers,
-    get_provider_details,
-    verify_provider_background,
-    create_escrow_booking,
-    approve_booking,
-    reject_booking,
-    release_payment,
-)
-from hogar_confianza.tools.safety_tools import check_in_provider, check_out_provider
+from sqlmodel import Session
+
 from hogar_confianza.database.engine import get_db_engine
 from hogar_confianza.database.models import BookingDB
-from sqlmodel import Session, select
+from hogar_confianza.tools.provider_tools import (
+    approve_booking,
+    create_escrow_booking,
+    get_provider_details,
+    reject_booking,
+    release_payment,
+    search_providers,
+    verify_provider_background,
+)
+from hogar_confianza.tools.safety_tools import check_in_provider, check_out_provider
 
 
 def test_search_providers_by_service_and_zip():
@@ -152,9 +153,10 @@ def test_check_out_provider():
 
 
 def test_check_out_updates_db():
+    from sqlmodel import Session
+
     from hogar_confianza.database.engine import get_db_engine
     from hogar_confianza.database.models import SafetyCheckInDB
-    from sqlmodel import Session
 
     check_in_provider("BK-DBCO-001", "Carlos López", "Calle Falsa 123")
     check_out_provider("BK-DBCO-001", "Carlos López", 3.0)

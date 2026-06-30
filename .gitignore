@@ -11,3 +11,4 @@ build/
 gcp-credentials.json
 archivo.env
 *.db
+.env.api-key

@@ -1,4 +1,5 @@
 import json
+import math
 import random
 import unicodedata
 from datetime import datetime
@@ -6,14 +7,46 @@ from datetime import datetime
 from sqlmodel import Session, select
 
 from hogar_confianza.database.engine import get_db_engine
-from hogar_confianza.database.models import BookingDB, ProviderDB
+from hogar_confianza.database.models import BookingDB, ProviderDB, UserAddressDB
 
 
 def _normalize(s: str) -> str:
     return unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower().strip()
 
 
-def search_providers(service_type: str, zip_code: str) -> str:
+def _haversine(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    EARTH_RADIUS_KM = 6371.0
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lng2 - lng1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+    return round(EARTH_RADIUS_KM * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a)), 1)
+
+
+def _provider_to_dict(p: ProviderDB) -> dict:
+    return {
+        "id": p.id,
+        "name": p.name,
+        "service": p.service,
+        "rating": p.rating,
+        "verified": p.verified,
+        "years_experience": p.years_experience,
+        "has_insurance": p.has_insurance,
+        "completed_jobs": p.completed_jobs,
+        "trust_score": p.trust_score,
+        "lat": p.lat,
+        "lng": p.lng,
+        "service_area_km": p.service_area_km,
+        "address_formatted": p.address_formatted,
+    }
+
+
+def search_providers(
+    service_type: str,
+    zip_code: str,
+    user_lat: float | None = None,
+    user_lng: float | None = None,
+) -> str:
     engine = get_db_engine()
     with Session(engine) as session:
         stmt = select(ProviderDB).where(ProviderDB.service == _normalize(service_type))
@@ -23,22 +56,61 @@ def search_providers(service_type: str, zip_code: str) -> str:
         if not matches:
             matches = list(providers)
 
-        matches.sort(key=lambda p: p.trust_score, reverse=True)
-
         result = []
-        for p in matches:
-            result.append({
-                "id": p.id,
-                "name": p.name,
-                "service": p.service,
-                "rating": p.rating,
-                "verified": p.verified,
-                "years_experience": p.years_experience,
-                "has_insurance": p.has_insurance,
-                "completed_jobs": p.completed_jobs,
-                "trust_score": p.trust_score,
-            })
+        if user_lat is not None and user_lng is not None:
+            max_dist = 0.0
+            entries = []
+            for p in matches:
+                if p.lat is not None and p.lng is not None:
+                    dist = _haversine(user_lat, user_lng, p.lat, p.lng)
+                else:
+                    dist = None
+                if dist is not None and dist > max_dist:
+                    max_dist = dist
+                entries.append((p, dist))
+
+            for p, dist in entries:
+                entry = _provider_to_dict(p)
+                if dist is not None:
+                    entry["distance_km"] = dist
+                    entry["within_service_area"] = dist <= p.service_area_km
+                else:
+                    entry["distance_km"] = None
+                    entry["within_service_area"] = None
+                result.append(entry)
+
+            def _sort_key(entry: dict) -> float:
+                trust = entry["trust_score"]
+                dist = entry.get("distance_km")
+                if dist is not None and max_dist > 0:
+                    proximity_score = (1 - dist / max_dist) * 5.0
+                else:
+                    proximity_score = 2.5
+                return -(trust * 0.6 + proximity_score * 0.4)
+
+            result.sort(key=_sort_key)
+        else:
+            matches.sort(key=lambda p: p.trust_score, reverse=True)
+            result = [_provider_to_dict(p) for p in matches]
+
         return json.dumps(result, ensure_ascii=False, indent=2)
+
+
+def get_provider_location(provider_id: str) -> str:
+    engine = get_db_engine()
+    with Session(engine) as session:
+        provider = session.get(ProviderDB, provider_id)
+        if not provider:
+            return json.dumps({"error": "Proveedor no encontrado"})
+
+        return json.dumps({
+            "provider_id": provider.id,
+            "name": provider.name,
+            "lat": provider.lat,
+            "lng": provider.lng,
+            "service_area_km": provider.service_area_km,
+            "address": provider.address_formatted or "Dirección no disponible",
+        }, ensure_ascii=False, indent=2)
 
 
 def get_provider_details(provider_id: str) -> str:
@@ -92,6 +164,39 @@ def verify_provider_background(provider_id: str) -> str:
         }, ensure_ascii=False, indent=2)
 
 
+def _find_or_create_address(session, user_id: str, address: dict) -> UserAddressDB:
+    existing = session.exec(
+        select(UserAddressDB).where(
+            UserAddressDB.user_id == user_id,
+            UserAddressDB.calle == address.get("calle", ""),
+            UserAddressDB.colonia == address.get("colonia", ""),
+            UserAddressDB.zip_code == address.get("zip_code", ""),
+        )
+    ).first()
+    if existing:
+        return existing
+
+    addr = UserAddressDB(
+        id=f"ADDR-{datetime.now().strftime('%Y%m%d')}-{random.randint(100, 999)}",
+        user_id=user_id,
+        calle=address.get("calle", ""),
+        numero_exterior=address.get("numero_exterior"),
+        numero_interior=address.get("numero_interior"),
+        colonia=address.get("colonia", ""),
+        ciudad=address.get("ciudad", ""),
+        estado=address.get("estado", ""),
+        zip_code=address.get("zip_code", ""),
+        pais=address.get("pais", "México"),
+        lat=address.get("lat"),
+        lng=address.get("lng"),
+        formatted_address=address.get("formatted_address"),
+        is_verified=address.get("is_verified", False),
+    )
+    session.add(addr)
+    session.flush()
+    return addr
+
+
 def create_escrow_booking(
     provider_id: str,
     service_type: str,
@@ -100,28 +205,35 @@ def create_escrow_booking(
     scheduled_date: str,
     scheduled_time: str,
     user_name: str,
-    user_phone: str
+    user_phone: str,
+    address: dict | None = None,
 ) -> str:
     booking_id = f"BK-{datetime.now().strftime('%Y%m%d')}-{random.randint(100, 999)}"
-    booking = BookingDB(
-        id=booking_id,
-        user_id=user_phone,
-        provider_id=provider_id,
-        service=service_type.lower(),
-        description=description,
-        status="PENDIENTE_APROBACION",
-        scheduled_date=scheduled_date,
-        scheduled_time=scheduled_time,
-        amount=amount,
-        escrow_held=False,
-    )
 
     engine = get_db_engine()
     with Session(engine) as session:
+        address_id = None
+        if address:
+            addr = _find_or_create_address(session, user_phone, address)
+            address_id = addr.id
+
+        booking = BookingDB(
+            id=booking_id,
+            user_id=user_phone,
+            provider_id=provider_id,
+            service=service_type.lower(),
+            description=description,
+            status="PENDIENTE_APROBACION",
+            scheduled_date=scheduled_date,
+            scheduled_time=scheduled_time,
+            amount=amount,
+            escrow_held=False,
+            address_id=address_id,
+        )
         session.add(booking)
         session.commit()
 
-    return json.dumps({
+    response = {
         "booking_id": booking_id,
         "status": "PENDIENTE_APROBACION",
         "message": f"Reserva {booking_id} creada. El usuario debe aprobar el depósito en garantía de ${amount:,.2f} MXN antes de confirmar.",
@@ -130,8 +242,12 @@ def create_escrow_booking(
             "El pago se libera al proveedor 48h después de completar el servicio",
             "El usuario puede reportar incidentes durante la ventana de 48h",
             "Si hay disputa, el monto queda retenido hasta resolución",
-        ]
-    }, ensure_ascii=False, indent=2)
+        ],
+    }
+    if address_id:
+        response["address_id"] = address_id
+
+    return json.dumps(response, ensure_ascii=False, indent=2)
 
 
 def approve_booking(booking_id: str) -> str:

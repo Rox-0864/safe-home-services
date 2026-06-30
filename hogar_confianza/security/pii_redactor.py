@@ -1,7 +1,4 @@
 import re
-import json
-from typing import Optional
-
 
 PII_PATTERNS = {
     "PHONE": re.compile(r"\b(\+?\d{2,3}[ -]?\d{4}[ -]?\d{4})\b"),

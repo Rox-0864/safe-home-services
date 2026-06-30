@@ -7,8 +7,8 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 
 from google.adk import Runner
-from hogar_confianza.agent import root_agent
 
+from hogar_confianza.agent import root_agent
 
 DATASET_PATH = os.path.join(os.path.dirname(__file__), "datasets", "basic-dataset.json")
 TRACES_PATH = os.path.join(os.path.dirname(__file__), "../../artifacts/traces/generated_traces.json")

@@ -1,6 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional
 from enum import Enum
+from typing import Optional
+
+from pydantic import BaseModel
 
 
 class ServiceType(str, Enum):
@@ -16,6 +17,20 @@ class ServiceType(str, Enum):
     OTRO = "otro"
 
 
+class Address(BaseModel):
+    calle: str
+    numero_exterior: Optional[str] = None
+    numero_interior: Optional[str] = None
+    colonia: str
+    ciudad: str
+    estado: str
+    zip_code: str
+    pais: str = "México"
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    formatted_address: Optional[str] = None
+
+
 class ServiceRequest(BaseModel):
     service_type: ServiceType
     description: str
@@ -23,6 +38,7 @@ class ServiceRequest(BaseModel):
     preferred_date: Optional[str] = None
     preferred_time: Optional[str] = None
     urgency: str = "normal"
+    address: Optional[Address] = None
 
 
 class Provider(BaseModel):
@@ -37,6 +53,10 @@ class Provider(BaseModel):
     has_insurance: bool
     completed_jobs: int
     trust_score: float
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    service_area_km: float = 10.0
+    address_formatted: Optional[str] = None
 
 
 class Booking(BaseModel):
@@ -50,6 +70,7 @@ class Booking(BaseModel):
     scheduled_time: str
     amount: float
     escrow_held: bool
+    address: Optional[Address] = None
 
 
 class SafetyCheckIn(BaseModel):

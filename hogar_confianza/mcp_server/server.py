@@ -1,9 +1,9 @@
 import json
-from mcp.server import Server, NotificationOptions
-from mcp.server.models import InitializationOptions
-from mcp.types import Tool, TextContent
-import mcp.server.stdio
 
+import mcp.server.stdio
+from mcp.server import Server
+from mcp.server.models import InitializationOptions
+from mcp.types import TextContent, Tool
 
 _SERVICES_CATALOG = {
     "limpieza": {"name": "Limpieza", "description": "Limpieza general de casas, oficinas, alfombras, ventanas", "avg_price_range": "500-2000 MXN", "typical_duration": "2-4 horas"},

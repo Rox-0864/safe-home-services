@@ -1,8 +1,6 @@
 import pytest
-from sqlmodel import SQLModel
 
 from hogar_confianza.database.engine import get_engine, get_session, init_db, set_db_engine
-from hogar_confianza.database.models import ProviderDB, BookingDB, SafetyCheckInDB
 from hogar_confianza.database.seed import seed_providers
 
 
