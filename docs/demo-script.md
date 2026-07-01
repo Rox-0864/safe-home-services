@@ -1,124 +1,105 @@
-# HogarConfianza — Demo Video Script
+# HogarConfianza — Unified Demo Script
 
-**Duration:** ~5 min | **Language:** English | **Audience:** Course creators / instructors
-
----
-
-## 1. Introduction (0:00 – 0:20)
-
-**Visual:** Title card — "HogarConfianza: Multi-Agent Concierge for Trusted Home Services"
-
-**VO:**
-> This is HogarConfianza — a multi-agent system that connects Mexican households with verified, trustworthy service providers. Built with Google ADK for the 5-Day AI Agents Intensive Course.
->
-> Let me show you what I built and how each concept from the course comes together.
+**Duration:** ~5 min | **Language:** English | **Audience:** Course instructors + general viewers
 
 ---
 
-## 2. Architecture (0:20 – 0:50)
+## 1. The Story + Intro (0:00 – 0:45)
 
-**Visual:** Architecture diagram — RootAgent → 4 sub-agents, tools, MCP servers, security
+**Visual:** Title card — "HogarConfianza: Multi-Agent Concierge for Trusted Home Services" → slowly fade to speaker
 
 **VO:**
-> A RootAgent orchestrates four specialized sub-agents. Every user message first passes through a SecurityScreen — built as a `before_model_callback` — that redacts PII and detects prompt injection before the LLM ever sees it.
+> The idea for this project came from a personal experience. A painter showed up at my door offering his services, telling me a heartbreaking story about his sick son. I felt for him and let him in. At some point we got distracted, and he stole a cellphone and a laptop.
 >
-> - **TriageAgent** classifies the service type
-> - **MatchingAgent** searches providers with Maps-powered distance ranking
-> - **SafetyAgent** handles check-in/out, panic button, incident reporting
-> - **BookingAgent** manages escrow with human-in-the-loop approval
+> Nothing violent — but the violation of trust was real. And finding reliable service providers? It's a trust lottery. You ask neighbors, search Facebook groups — and you still have no idea who you're letting into your home.
 >
-> Each agent has its own set of ADK tools. Two MCP servers provide the service catalog and Google Maps capabilities.
+> That's why I built HogarConfianza — a multi-agent system that connects Mexican households with verified, trustworthy service providers. Powered by Google ADK.
 
 ---
 
-## 3. Live Demo — ADK Web Playground (0:50 – 3:30)
+## 2. Architecture (0:45 – 1:15)
 
-### 3a — Triage + Matching (0:50 – 1:30)
-
-**Visual:** Terminal → `make web` → browser opens → type: "I need a plumber in Roma, CP 06600"
+**Visual:** Architecture diagram — RootAgent → 4 sub-agents, tools, MCP servers, security callback
 
 **VO:**
-> Starting the ADK web playground with a single command. The user says: "I need a plumber in Roma, zip code 06600."
+> A RootAgent orchestrates four specialized sub-agents. Every message passes through a SecurityScreen — a `before_model_callback` — that redacts PII and detects prompt injection before the LLM ever sees it.
 >
-> The TriageAgent correctly classifies this as plumbing and transfers to MatchingAgent. The agent asks for a full address — this triggers our Maps integration.
-
-### 3b — Address Geocoding + Distance (1:30 – 1:55)
-
-**Visual:** User gives address → agent calls `geocode_address` → coordinates appear → `calculate_distance` runs
-
-**VO:**
-> The user provides their address. The agent calls `geocode_address` — our custom ADK tool wrapping the Google Maps API — converting it to GPS coordinates. Then `calculate_distance` ranks providers by proximity.
+> **TriageAgent** classifies the service. **MatchingAgent** searches providers with Maps-powered distance ranking. **SafetyAgent** handles check-in/out and panic alerts. **BookingAgent** manages escrow payments with human-in-the-loop approval.
 >
-> This is the Maps tool integration, combining trust scores with real distance data.
-
-### 3c — Provider Selection (1:55 – 2:20)
-
-**Visual:** Provider list with ratings, trust scores, badges
-
-**VO:**
-> Providers are returned sorted by trust score AND proximity — a weighted ranking. Each shows verification status, insurance, and trust score. One provider has a trust score of 3.2 with no insurance — the agent explicitly warns: "not verified, use at your own risk." This is our safety-first design.
-
-### 3d — Escrow + HITL (2:20 – 2:55)
-
-**Visual:** User selects Maria Garcia → create_escrow_booking → "Do you approve $3,200 MXN deposit?"
-
-**VO:**
-> The user selects Maria Garcia — trust score 4.9, verified, insured. The BookingAgent calls `create_escrow_booking`: the payment is held in guarantee, not released to the provider.
->
-> Then the critical HITL moment: the agent asks "Do you APPROVE or REJECT this booking?" It cannot auto-approve any service over $100. The user must explicitly confirm. This is the human-in-the-loop pattern from the course, applied to financial transactions.
-
-### 3e — Safety Check-in/out (2:55 – 3:30)
-
-**Visual:** Streamlit sidebar → show booking → click check-in → check-out → panic button
-
-**VO:**
-> Switching to our Streamlit UI for the safety flow. When a booking is confirmed, the sidebar shows check-in and check-out buttons. Clicking check-in simulates provider arrival with selfie confirmation and GPS verification — the SafetyAgent logs everything.
->
-> And the red panic button triggers the emergency protocol: trusted contact is notified, provider is blocked, security team is alerted. This is the safety agent in action.
+> Two MCP servers provide the service catalog and Google Maps capabilities. 17 ADK tools across all agents.
 
 ---
 
-## 4. Security (3:30 – 3:55)
+## 3. Live Demo (1:15 – 3:45)
 
-**Visual:** Show `pii_redactor.py` — patterns + injection detection
+### 3a — Triage + Matching (1:15 – 1:50)
+
+**Visual:** Streamlit UI → language toggle EN → register name/phone → type: "I need a plumber urgently, I have a water leak in Roma, CDMX"
 
 **VO:**
-> The SecurityScreen, running as a `before_model_callback`, redacts six types of PII — phone numbers, emails, credit cards, CURP, addresses — using regex patterns. It also detects prompt injection across 8 patterns in both Spanish and English.
+> Let me switch to English and register quickly — just name and phone. Now: "I need a plumber urgently, I have a water leak in Roma."
+>
+> The TriageAgent classifies this as plumbing and transfers to MatchingAgent, which asks for a full address to calculate proximity.
+
+### 3b — Geocoding + Provider Cards (1:50 – 2:25)
+
+**Visual:** User types address → provider cards appear with ratings, trust scores, badges, distance
+
+**VO:**
+> The address triggers `geocode_address` — our Google Maps tool — converting it to GPS coordinates. Then `calculate_distance` ranks providers by proximity.
+>
+> Providers are returned as visual cards with trust scores, verification status, insurance badges, and distance. Each shows real data. Notice this provider has a low trust score and no insurance — the agent explicitly warns "not verified, use at your own risk." Safety-first design.
+
+### 3c — Escrow + HITL (2:25 – 3:00)
+
+**Visual:** Select Maria Garcia → create_escrow_booking → "Do you APPROVE the $3,200 MXN deposit?"
+
+**VO:**
+> I'll select Maria Garcia — trust score 4.9, verified, insured. The BookingAgent calls `create_escrow_booking`: the payment is held in guarantee, not released to the provider until service is complete.
+>
+> Now the critical moment: the agent asks me to APPROVE or REJECT. It cannot auto-approve any service over $100. I must confirm explicitly. That's human-in-the-loop applied to financial transactions.
+
+### 3d — Check-in / Check-out + Safety (3:00 – 3:45)
+
+**Visual:** Sidebar → booking status → click check-in → check-out → hover panic button
+
+**VO:**
+> When the booking is confirmed, the sidebar shows check-in and check-out buttons. The provider checks in on arrival — our system logs location and notifies a trusted contact. On departure, they check out with hours logged.
+>
+> And if anything feels wrong — the red panic button triggers an emergency protocol: trusted contact notified, provider blocked, security team alerted.
+
+---
+
+## 4. Security (3:45 – 4:05)
+
+**Visual:** Code snippet of `pii_redactor.py` — regex patterns + injection detection
+
+**VO:**
+> Behind the scenes, the SecurityScreen redacts six types of PII — phone numbers, emails, credit cards, CURP, addresses — using regex patterns. It also detects prompt injection across 8 patterns in both Spanish and English.
 >
 > If injection is detected, the callback returns a blocked response immediately — the LLM never processes the malicious input.
 
 ---
 
-## 5. Testing & Evaluation (3:55 – 4:20)
+## 5. Testing & Deployment (4:05 – 4:40)
 
-**Visual:** Terminal → tests pass → eval results
+**Visual:** Terminal → `make test` → 69 passing → `make docker-build` → `make deploy` → Cloud Run
 
 **VO:**
-> 63 automated tests cover the database models, all agent tools, the Maps client, and the complete escrow lifecycle — including edge cases like dual-confirmation payment release.
+> 69 automated tests cover database models, all agent tools, the Maps client, and the complete escrow lifecycle — including edge cases like dual-confirmation payment release.
 >
-> Beyond unit tests, an evaluation framework runs 8 real-world scenarios through LLM-as-judge, scoring on routing correctness, security containment, and safety protocol adherence.
+> The app is containerized with a multi-stage Docker build and deploys to Cloud Run in two commands. For production, it connects to Cloud SQL PostgreSQL.
 
 ---
 
-## 6. Deployment to Google Cloud (4:20 – 4:45)
+## 6. Outro (4:40 – 5:00)
 
-**Visual:** Terminal → `make docker-build` → `make deploy` → Cloud Run dashboard
-
-**VO:**
-> The app is containerized with a multi-stage Docker build and deploys to Cloud Run in two commands: `make docker-build` pushes to Artifact Registry, `make deploy` creates a serverless, auto-scaling service with TLS and health checks.
->
-> For production, it connects to Cloud SQL PostgreSQL. Without a database URL, it uses local SQLite — perfect for development.
-
----
-
-## 7. Outro (4:45 – 5:00)
-
-**Visual:** Final screen — repo link
+**Visual:** Final screen — repo link + thank you
 
 **VO:**
-> HogarConfianza demonstrates multi-agent orchestration, ADK tools, MCP integration, security callbacks, human-in-the-loop, and cloud deployment — all concepts from this course applied to a real-world problem.
+> HogarConfianza demonstrates multi-agent orchestration, ADK tools, MCP integration, security callbacks, human-in-the-loop, and cloud deployment — all applied to a real problem that affects millions of households.
 >
-> Thank you for this incredible course. Full source code is on GitHub.
+> Full source code is on GitHub. Thank you for watching.
 
 ---
 
@@ -126,26 +107,24 @@
 
 | Action | Command |
 |--------|---------|
-| ADK Web (Antigravity) | `make web` |
+| Run demo (web) | `make web` |
+| Run demo (Streamlit) | `make streamlit-run` |
 | Run tests | `make test` |
-| Run evaluation | `python tests/eval/generate_traces.py && python tests/eval/evaluate.py` |
 | Docker build | `make docker-build` |
 | Deploy to Cloud Run | `make deploy` |
-| Streamlit UI | `make streamlit-run` |
 
 ## Key Providers for Demo
 
-| Provider | Service | Trust | Verified | Insurance |
-|----------|---------|-------|----------|-----------|
-| Maria Garcia | Electricidad | 4.9 | ✅ | ✅ |
-| Juan Perez | Plomeria | 4.7 | ✅ | ✅ |
-| Pedro Hernandez | Jardineria | 3.2 | ❌ | ❌ |
-
-**Demo zip codes:** `06600` (Roma), `06700` (Del Valle)
+| Name | Service | Trust | Verified | Insurance | Why |
+|------|---------|-------|----------|-----------|-----|
+| Maria Garcia | Electrical | 4.9 | ✅ | ✅ | Best pick — safe choice |
+| Juan Perez | Plumbing | 4.7 | ✅ | ✅ | Solid second option |
+| Pedro Hernandez | Gardening | 3.2 | ❌ | ❌ | Use to demo safety warning |
 
 ## Fastest Demo Path
 
-1. `make web` → chat "I need a plumber in Roma, CP 06600"
-2. Address → "Calle Salamanca 154, Colonia Roma, CDMX"
-3. "I want to hire Juan Perez" → "Yes, I approve" (HITL)
-4. `make streamlit-run` → sidebar shows booking → check-in → check-out
+1. Open Streamlit: `make streamlit-run`
+2. Toggle EN, register name + phone
+3. Chat: "I need a plumber urgently, I have a water leak in Roma, CDMX"
+4. Address: "Calle Salamanca 154, Colonia Roma, CDMX"
+5. Select Maria Garcia → approve booking → check-in → check-out

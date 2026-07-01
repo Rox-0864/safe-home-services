@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/Rox-0864/safe-home-services/actions/workflows/ci.yml/badge.svg)](https://github.com/Rox-0864/safe-home-services/actions/workflows/ci.yml)
 
-Conecta hogares mexicanos con proveedores de servicio doméstico **CONFIABLES y VERIFICADOS** mediante un sistema multi-agente con Google ADK, pagos en garantía (escrow), integración con Google Maps, y protocolos de seguridad.
+Connects Mexican households with **TRUSTED and VERIFIED** domestic service providers through a multi-agent system powered by Google ADK, escrow payments, Google Maps integration, and safety protocols.
 
 ---
 
@@ -21,28 +21,32 @@ make test        # run 69 tests
 
 ## Architecture
 
-### Agent Tree
+> See [`docs/architecture-diagram.md`](docs/architecture-diagram.md) for a full graphical version.
 
+```mermaid
+graph TB
+    User["👤 User"] --> SS["🛡️ SecurityScreen
+                        before_model_callback"]
+    SS -->|safe| RA["🤖 RootAgent"]
+    SS -->|blocked| Blocked["⛔ Blocked"]
+    RA --> Triage["📋 TriageAgent"]
+    RA --> Matching["🔍 MatchingAgent"]
+    RA --> Safety["🚨 SafetyAgent"]
+    RA --> Booking["💰 BookingAgent"]
+    Matching --> MapsAPI["🗺️ Google Maps"]
+    Matching --> Catalog["📦 MCP Server"]
+    Booking -->|approve| HITL["👤 HITL"]
+    Safety --> Contact["📱 Trusted Contact"]
 ```
-Usuario → RootAgent
-              │
-              ├── SecurityScreen (before_model_callback)
-              │     ├── Redacta PII (CURP, teléfono, email, tarjeta, dirección)
-              │     └── Detecta prompt injection (8 patrones ES/EN)
-              │
-              ├── TriageAgent    → Clasifica el servicio solicitado (sin tools)
-              ├── MatchingAgent  → Busca proveedores + Maps + verifica antecedentes
-              │     ├── search_providers, get_provider_details, get_provider_location
-              │     ├── verify_provider_background
-              │     └── geocode_address, validate_address, calculate_distance (Maps)
-              ├── SafetyAgent    → Check-in/out, botón de pánico, incidentes
-              │     ├── check_in_provider, check_out_provider
-              │     ├── notify_trusted_contact, report_incident, trigger_panic_button
-              │     └── geocode_address, validate_address (Maps)
-              └── BookingAgent   → Reserva + Escrow + HITL
-                    ├── create_escrow_booking, approve_booking
-                    ├── reject_booking, release_payment (dual confirmation)
-```
+
+### Agents
+
+| Agent | Role | Tools |
+|-------|------|-------|
+| **TriageAgent** | Classifies the requested service | None (pure LLM routing) |
+| **MatchingAgent** | Searches providers + Maps + background check | 7 tools: search, details, location, verify, geocode, validate, distance |
+| **SafetyAgent** | Check-in/out, panic button, incidents | 7 tools: check-in, check-out, notify, report, panic, geocode, validate |
+| **BookingAgent** | Booking + Escrow + HITL | 4 tools: create, approve, reject, release |
 
 ### MCP Servers
 
@@ -92,11 +96,11 @@ Usuario → RootAgent
 
 ## Security
 
-- **PII Redaction**: CURP, teléfonos, emails, tarjetas de crédito, direcciones — redactados antes del LLM
-- **Prompt Injection**: 8 patrones detectados (ES/EN) — respuesta bloqueada sin involucrar al LLM
-- **Escrow**: Pago retenido 48h post-servicio, liberación solo con doble confirmación (usuario + proveedor)
-- **Panic Button**: Alerta inmediata a contacto de confianza + bloqueo de proveedor + alerta a equipo de seguridad
-- **Provider Vetting**: Verificación de antecedentes, seguro, trust score
+- **PII Redaction**: CURP, phone numbers, emails, credit cards, addresses — redacted before reaching the LLM
+- **Prompt Injection**: 8 patterns detected (ES/EN) — blocked response without involving the LLM
+- **Escrow**: Payment held 48h post-service, released only with dual confirmation (user + provider)
+- **Panic Button**: Immediate alert to trusted contact + provider block + security team alert
+- **Provider Vetting**: Background check, insurance verification, trust score
 
 ---
 
@@ -104,14 +108,14 @@ Usuario → RootAgent
 
 | ID | Name | Service | Rating | Trust | Verified | Insurance | Zone |
 |----|------|---------|--------|-------|----------|-----------|------|
-| PROV-001 | Juan Pérez | Plomería | ⭐4.5 | 4.7 | ✅ | ✅ | Roma Norte |
-| PROV-002 | María García | Electricidad | ⭐4.8 | 4.9 | ✅ | ✅ | Del Valle |
-| PROV-003 | Carlos López | Pintura | ⭐4.2 | 3.8 | ✅ | ❌ | Condesa |
-| PROV-004 | Ana Martínez | Limpieza | ⭐4.6 | 4.5 | ✅ | ✅ | Polanco |
-| PROV-005 | Roberto Sánchez | Impermeabilización | ⭐4.3 | 4.2 | ✅ | ✅ | Narvarte |
-| PROV-006 | Laura Torres | Carpintería | ⭐4.7 | 4.6 | ✅ | ✅ | Escandón |
-| PROV-007 | Pedro Hernández | Jardinería | ⭐4.1 | **3.2** | **❌** | **❌** | Coyoacán |
-| PROV-008 | Diana Flores | Albañilería | ⭐4.4 | 4.8 | ✅ | ✅ | Tláhuac |
+| PROV-001 | Juan Pérez | Plumbing | ⭐4.5 | 4.7 | ✅ | ✅ | Roma Norte |
+| PROV-002 | María García | Electrical | ⭐4.8 | 4.9 | ✅ | ✅ | Del Valle |
+| PROV-003 | Carlos López | Painting | ⭐4.2 | 3.8 | ✅ | ❌ | Condesa |
+| PROV-004 | Ana Martínez | Cleaning | ⭐4.6 | 4.5 | ✅ | ✅ | Polanco |
+| PROV-005 | Roberto Sánchez | Waterproofing | ⭐4.3 | 4.2 | ✅ | ✅ | Narvarte |
+| PROV-006 | Laura Torres | Carpentry | ⭐4.7 | 4.6 | ✅ | ✅ | Escandón |
+| PROV-007 | Pedro Hernández | Gardening | ⭐4.1 | **3.2** | **❌** | **❌** | Coyoacán |
+| PROV-008 | Diana Flores | Masonry | ⭐4.4 | 4.8 | ✅ | ✅ | Tláhuac |
 
 > **Demo tip:** PROV-007 is the only unverified provider with low trust score — use it to demonstrate safety warnings.
 
@@ -221,7 +225,7 @@ make test
 
 | ID | Scenario | Tests |
 |----|----------|-------|
-| tc-001 | Auto-aprobation: low-cost cleaning ($450) | Routing |
+| tc-001 | Auto-approval: low-cost cleaning ($450) | Routing |
 | tc-002 | Human review: expensive plumbing ($2,500) | HITL |
 | tc-003 | PII redaction (CURP + phone) | Security |
 | tc-004 | Prompt injection detection | Security |
@@ -237,11 +241,11 @@ python tests/eval/evaluate.py
 
 ---
 
-## 🇲🇽 Demo Video — Flujo de Contratación
+## 🇲🇽 Demo Video — Hiring Flow
 
-Ver `docs/demo-script.md` para el guion completo (~5 min). Flujo recomendado:
+See `docs/demo-script.md` for the full script (~5 min). Recommended flow:
 
-1. `make web` — abrir ADK web playground
+1. `make web` — open ADK web playground
 2. Chat: "I need a plumber in Roma, CP 06600"
 3. Address: "Calle Salamanca 154, Colonia Roma, CDMX" (triggers Maps geocoding)
 4. Select provider → "I want to hire Juan Pérez"
