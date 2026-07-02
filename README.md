@@ -221,7 +221,13 @@ make test
 
 ### Evaluation — LLM-as-Judge
 
-8 real-world scenarios scored on routing correctness, security containment, and safety:
+An automated evaluation harness runs 8 real-world scenarios through the actual agent using the ADK Runner, captures full interaction traces, and scores them against expected behavior.
+
+**How it works:**
+1. `generate_traces.py` feeds each scenario to the agent and records every event (tool calls, agent transfers, responses)
+2. `evaluate.py` scores each trace on 3 metrics (1-5) using keyword-based criteria matching expected agent behavior
+
+**8 scenarios scored on routing correctness, security containment, and safety:**
 
 | ID | Scenario | Tests |
 |----|----------|-------|
@@ -235,8 +241,8 @@ make test
 | tc-008 | Unverified provider warning | Safety |
 
 ```bash
-python tests/eval/generate_traces.py
-python tests/eval/evaluate.py
+python tests/eval/generate_traces.py   # run scenarios → artifacts/traces/
+python tests/eval/evaluate.py           # score traces → artifacts/grade_results/
 ```
 
 ---
