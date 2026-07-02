@@ -89,7 +89,7 @@ graph TB
 | **Before Model Callback** | `SecurityScreen` — PII redaction + injection detection, blocks before LLM |
 | **Human-in-the-Loop** | Escrow approval + payment release require explicit user confirmation |
 | **Memory** | Persistent sessions per user via `InMemorySessionService` |
-| **Evaluation** | 8 real-world scenarios with LLM-as-judge |
+| **Evaluation Harness** | 8 real-world scenarios with LLM-as-judge, automated trace generation + scoring |
 | **Maps Integration** | Geocoding, distance calculation, place autocomplete (mock mode when no API key) |
 
 ---
